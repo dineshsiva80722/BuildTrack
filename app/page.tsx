@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import Image from "next/image"
 import { useState, useEffect } from "react"
 import {
   CalendarDays,
@@ -189,13 +189,13 @@ export default function BuildTrack() {
       employees.map((emp) =>
         emp.id === employeeModal.employee?.id
           ? {
-              ...emp,
-              name: employeeForm.name,
-              role: employeeForm.role,
-              dailyRate: Number.parseFloat(employeeForm.dailyRate),
-              status: employeeForm.status,
-              hoursWorked: Number.parseFloat(employeeForm.hoursWorked),
-            }
+            ...emp,
+            name: employeeForm.name,
+            role: employeeForm.role,
+            dailyRate: Number.parseFloat(employeeForm.dailyRate),
+            status: employeeForm.status,
+            hoursWorked: Number.parseFloat(employeeForm.hoursWorked),
+          }
           : emp,
       ),
     )
@@ -269,13 +269,13 @@ export default function BuildTrack() {
       materials.map((mat) =>
         mat.id === materialModal.material?.id
           ? {
-              ...mat,
-              name: materialForm.name,
-              unit: materialForm.unit,
-              current: Number.parseFloat(materialForm.current),
-              minimum: Number.parseFloat(materialForm.minimum),
-              cost: Number.parseFloat(materialForm.cost),
-            }
+            ...mat,
+            name: materialForm.name,
+            unit: materialForm.unit,
+            current: Number.parseFloat(materialForm.current),
+            minimum: Number.parseFloat(materialForm.minimum),
+            cost: Number.parseFloat(materialForm.cost),
+          }
           : mat,
       ),
     )
@@ -352,10 +352,10 @@ export default function BuildTrack() {
       employees.map((emp) =>
         emp.id === id
           ? {
-              ...emp,
-              status: emp.status === "present" ? "absent" : "present",
-              hoursWorked: emp.status === "present" ? 0 : 8,
-            }
+            ...emp,
+            status: emp.status === "present" ? "absent" : "present",
+            hoursWorked: emp.status === "present" ? 0 : 8,
+          }
           : emp,
       ),
     )
@@ -395,7 +395,12 @@ export default function BuildTrack() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">BuildTrack Login</h2>
+            <div className="Login flex items-center justify-center p-2 ">
+              <div className="image w-14 h-14 mt-2 ">
+                <Image src="/dezproxlogo.png" alt="Dezprox Logo" width={50} height={50} />
+              </div>
+              <h2 className="text-center text-3xl font-extrabold text-gray-900">BuildTrack Login</h2>
+            </div>
             <p className="mt-2 text-center text-sm text-gray-600">Construction Site Management Platform</p>
           </div>
           <form className="mt-8 space-y-6" onSubmit={handleLogin}>
@@ -552,9 +557,9 @@ export default function BuildTrack() {
               <div className="text-2xl font-bold">
                 {monthlyStats.length > 0
                   ? (
-                      monthlyStats.reduce((sum, emp) => sum + Number.parseFloat(emp.attendanceRate), 0) /
-                      monthlyStats.length
-                    ).toFixed(1)
+                    monthlyStats.reduce((sum, emp) => sum + Number.parseFloat(emp.attendanceRate), 0) /
+                    monthlyStats.length
+                  ).toFixed(1)
                   : 0}
                 %
               </div>
@@ -674,13 +679,12 @@ export default function BuildTrack() {
                         return (
                           <TableCell key={day} className="text-center p-1">
                             <div
-                              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                                dayData?.status === "present"
-                                  ? "bg-green-100 text-green-800"
-                                  : dayData?.status === "absent"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-gray-100 text-gray-400"
-                              } ${isToday ? "ring-2 ring-blue-500" : ""}`}
+                              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${dayData?.status === "present"
+                                ? "bg-green-100 text-green-800"
+                                : dayData?.status === "absent"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-gray-100 text-gray-400"
+                                } ${isToday ? "ring-2 ring-blue-500" : ""}`}
                             >
                               {dayData?.status === "present" ? "✓" : dayData?.status === "absent" ? "✗" : "-"}
                             </div>
@@ -1152,7 +1156,10 @@ export default function BuildTrack() {
               </button>
             </div>
             <div className="flex flex-shrink-0 items-center px-4 py-4">
-              <h1 className="text-xl font-bold text-orange-600">BuildTrack</h1>
+              <div className="image w-10 h-10 ">
+                <Image src="/dezproxlogo.png" alt="Dezprox Logo" width={32} height={32} />
+              </div>
+              <h1 className="text-xl font-bold text-green-600">BuildTrack</h1>
             </div>
             <nav className="mt-5 flex-1 space-y-1 px-2">
               {navigation.map((item) => {
@@ -1164,11 +1171,10 @@ export default function BuildTrack() {
                       setActiveTab(item.id)
                       setSidebarOpen(false)
                     }}
-                    className={`group flex w-full items-center rounded-md px-2 py-2 text-sm font-medium ${
-                      activeTab === item.id
-                        ? "bg-orange-100 text-orange-900"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                    }`}
+                    className={`group flex w-full items-center rounded-md px-2 py-2 text-sm font-medium ${activeTab === item.id
+                      ? "bg-green-100 text-green-900"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
                   >
                     <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
                     {item.name}
@@ -1183,8 +1189,11 @@ export default function BuildTrack() {
       {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
-          <div className="flex items-center flex-shrink-0 px-4 py-4">
-            <h1 className="text-xl font-bold text-orange-600">BuildTrack</h1>
+          <div className="flex items-center justify-start flex-shrink-0 px-4 py-4">
+            <div className="image w-10 h-10 mt-2">
+              <Image src="/dezproxlogo.png" alt="Dezprox Logo" width={32} height={32} />
+            </div>
+            <h1 className="text-xl font-bold text-green-600">BuildTrack</h1>
           </div>
           <nav className="mt-5 flex-1 space-y-1 px-2">
             {navigation.map((item) => {
@@ -1193,11 +1202,10 @@ export default function BuildTrack() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`group flex w-full items-center rounded-md px-2 py-2 text-sm font-medium ${
-                    activeTab === item.id
-                      ? "bg-orange-100 text-orange-900"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  }`}
+                  className={`group flex w-full items-center rounded-md px-2 py-2 text-sm font-medium ${activeTab === item.id
+                    ? "bg-green-100 text-green-900"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    }`}
                 >
                   <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
                   {item.name}
@@ -1213,14 +1221,14 @@ export default function BuildTrack() {
         <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white shadow lg:hidden">
           <button
             type="button"
-            className="border-r border-gray-200 px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-orange-500 lg:hidden"
+            className="border-r border-gray-200 px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 lg:hidden"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-6 w-6" />
           </button>
           <div className="flex flex-1 justify-between px-4">
             <div className="flex flex-1 items-center">
-              <h1 className="text-xl font-bold text-orange-600">BuildTrack</h1>
+              <h1 className="text-xl font-bold text-green-600">BuildTrack</h1>
             </div>
           </div>
         </div>

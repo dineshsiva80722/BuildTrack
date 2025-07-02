@@ -16,6 +16,7 @@ import {
   LogOut,
   Eye,
   EyeOff,
+  UserCheck,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -98,7 +99,13 @@ export default function BuildTrack() {
       for (let day = 1; day <= today.getDate(); day++) {
         const dateKey = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`
         history[dateKey] = {}
-        employees.forEach((emp) => {
+        const currentEmployees = [
+          { id: 1, name: "John Smith", role: "Foreman", dailyRate: 150, status: "present", hoursWorked: 8 },
+          { id: 2, name: "Mike Johnson", role: "Carpenter", dailyRate: 120, status: "present", hoursWorked: 8 },
+          { id: 3, name: "David Brown", role: "Laborer", dailyRate: 100, status: "absent", hoursWorked: 0 },
+          { id: 4, name: "Chris Wilson", role: "Electrician", dailyRate: 140, status: "present", hoursWorked: 6 },
+        ];
+        currentEmployees.forEach((emp) => {
           // Random attendance for demo - in real app this would be actual data
           const isPresent = Math.random() > 0.2 // 80% attendance rate
           history[dateKey][emp.id] = {
@@ -112,7 +119,18 @@ export default function BuildTrack() {
     })(),
   )
 
+  // Task management state
+  const [tasks, setTasks] = useState([
+    { id: 1, title: 'Foundation Work', project: 'Residential Tower', assignedTo: 1, status: 'in-progress', progress: 65, dueDate: '2023-06-15', description: 'Complete concrete pouring and leveling for the foundation' },
+    { id: 2, title: 'Electrical Wiring', project: 'Office Complex', assignedTo: 4, status: 'not-started', progress: 0, dueDate: '2023-06-20', description: 'Install and test all electrical wiring on 3rd floor' },
+    { id: 3, title: 'Material Delivery', project: 'Shopping Mall', assignedTo: 3, status: 'in-progress', progress: 30, dueDate: '2023-06-12', description: 'Receive and verify construction materials delivery' },
+  ]);
+
+  // UI state
   const [selectedMonth, setSelectedMonth] = useState(new Date())
+  const [selectedTask, setSelectedTask] = useState<typeof tasks[0] | null>(null);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [laborUpdates, setLaborUpdates] = useState<{employeeId: number; hours: number; taskId: number}[]>([]);
 
   // Modal states
   const [employeeModal, setEmployeeModal] = useState({ open: false, mode: "add", employee: null as Employee | null })
@@ -385,6 +403,7 @@ export default function BuildTrack() {
     { id: "dashboard", name: "Dashboard", icon: CalendarDays },
     { id: "attendance", name: "Daily Attendance", icon: Users },
     { id: "monthly", name: "Monthly Attendance", icon: CalendarDays },
+    { id: "supervisor", name: "Supervisor", icon: UserCheck },
     { id: "materials", name: "Materials", icon: Package },
     { id: "payroll", name: "Payroll", icon: Calculator },
   ]
@@ -1122,6 +1141,347 @@ export default function BuildTrack() {
     </div>
   )
 
+  const handleUpdateProgress = (taskId: number, progress: number) => {
+    setTasks(tasks.map(task => 
+      task.id === taskId ? { ...task, progress } : task
+    ));
+  };
+
+  const handleAssignTask = (taskId: number, employeeId: number) => {
+    setTasks(tasks.map(task => 
+      task.id === taskId ? { ...task, assignedTo: employeeId } : task
+    ));
+  };
+
+  const handleAddLaborUpdate = (employeeId: number, hours: number, taskId: number) => {
+    setLaborUpdates([...laborUpdates, { employeeId, hours, taskId }]);
+  };
+
+  const renderSupervisor = () => (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Supervisor Dashboard</h1>
+        <p className="text-muted-foreground">Manage labor work, assign tasks, and track progress</p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
+            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{tasks.length}</div>
+            <p className="text-xs text-muted-foreground">In progress: {tasks.filter(t => t.status === 'in-progress').length}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Team Members</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{employees.length}</div>
+            <p className="text-xs text-muted-foreground">{presentEmployees} present today</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Labor Hours</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {laborUpdates.reduce((sum, update) => sum + update.hours, 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">Hours logged today</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Task Management</CardTitle>
+                <CardDescription>Assign and track construction tasks</CardDescription>
+              </div>
+              <Button size="sm" onClick={() => {
+                setSelectedTask(null);
+                setIsTaskModalOpen(true);
+              }}>
+                <Plus className="h-4 w-4 mr-2" /> New Task
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {tasks.map((task) => (
+                <div 
+                  key={task.id} 
+                  className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setIsTaskModalOpen(true);
+                  }}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium">{task.title}</h4>
+                      <p className="text-sm text-muted-foreground">{task.project}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Assigned to: {employees.find(e => e.id === task.assignedTo)?.name || 'Unassigned'}
+                      </p>
+                    </div>
+                    <Badge variant={task.status === 'completed' ? 'default' : 'outline'}>
+                      {task.status.replace('-', ' ')}
+                    </Badge>
+                  </div>
+                  <div className="mt-3">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <span>Progress</span>
+                      <span>{task.progress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full" 
+                        style={{ width: `${task.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Update Labor Work</CardTitle>
+              <CardDescription>Log hours and update work progress</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Employee</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select employee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {employees.map((emp) => (
+                        <SelectItem key={emp.id} value={emp.id.toString()}>
+                          {emp.name} ({emp.role})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Task</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select task" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tasks.map((task) => (
+                        <SelectItem key={task.id} value={task.id.toString()}>
+                          {task.title} - {task.project}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Hours Worked</Label>
+                  <Input type="number" min="0.5" step="0.5" placeholder="Enter hours" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Work Description</Label>
+                  <Textarea placeholder="Describe the work completed" rows={3} />
+                </div>
+
+                <Button className="w-full">
+                  Log Work
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Labor Updates</CardTitle>
+              <CardDescription>Latest work logged by team</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {laborUpdates.length > 0 ? (
+                <div className="space-y-4">
+                  {laborUpdates.slice(0, 3).map((update, index) => {
+                    const employee = employees.find(e => e.id === update.employeeId);
+                    const task = tasks.find(t => t.id === update.taskId);
+                    return (
+                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{employee?.name || 'Unknown'}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {task?.title || 'Task'} - {update.hours}h
+                          </p>
+                        </div>
+                        <Badge variant="outline">
+                          {new Date().toLocaleDateString()}
+                        </Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No labor updates logged yet
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Task Detail Modal */}
+      <Dialog open={isTaskModalOpen} onOpenChange={setIsTaskModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedTask ? 'Edit Task' : 'New Task'}</DialogTitle>
+            <DialogDescription>
+              {selectedTask ? 'Update task details and progress' : 'Create a new construction task'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Task Title</Label>
+              <Input 
+                placeholder="Enter task title" 
+                value={selectedTask?.title || ''}
+                onChange={(e) => selectedTask && setSelectedTask({...selectedTask, title: e.target.value})}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Project</Label>
+              <Input 
+                placeholder="Enter project name"
+                value={selectedTask?.project || ''}
+                onChange={(e) => selectedTask && setSelectedTask({...selectedTask, project: e.target.value})}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Assign To</Label>
+              <Select 
+                value={selectedTask?.assignedTo?.toString() || ''}
+                onValueChange={(value) => selectedTask && setSelectedTask({...selectedTask, assignedTo: parseInt(value)})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select team member" />
+                </SelectTrigger>
+                <SelectContent>
+                  {employees.map((emp) => (
+                    <SelectItem key={emp.id} value={emp.id.toString()}>
+                      {emp.name} ({emp.role})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select 
+                value={selectedTask?.status || 'not-started'}
+                onValueChange={(value) => selectedTask && setSelectedTask({...selectedTask, status: value as any})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="not-started">Not Started</SelectItem>
+                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="on-hold">On Hold</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <Label>Progress: {selectedTask?.progress || 0}%</Label>
+                <span className="text-sm text-muted-foreground">
+                  {selectedTask?.progress === 100 ? 'Completed' : 'In Progress'}
+                </span>
+              </div>
+              <input 
+                type="range" 
+                min="0" 
+                max="100" 
+                value={selectedTask?.progress || 0} 
+                onChange={(e) => selectedTask && setSelectedTask({...selectedTask, progress: parseInt(e.target.value)})}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Due Date</Label>
+              <Input 
+                type="date" 
+                value={selectedTask?.dueDate || ''}
+                onChange={(e) => selectedTask && setSelectedTask({...selectedTask, dueDate: e.target.value})}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea 
+                placeholder="Enter task details" 
+                rows={4}
+                value={selectedTask?.description || ''}
+                onChange={(e) => selectedTask && setSelectedTask({...selectedTask, description: e.target.value})}
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button variant="outline" onClick={() => setIsTaskModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (selectedTask) {
+                    if (tasks.some(t => t.id === selectedTask.id)) {
+                      // Update existing task
+                      setTasks(tasks.map(t => 
+                        t.id === selectedTask.id ? selectedTask : t
+                      ));
+                    } else {
+                      // Add new task
+                      setTasks([...tasks, { ...selectedTask, id: Math.max(...tasks.map(t => t.id), 0) + 1 }]);
+                    }
+                  }
+                  setIsTaskModalOpen(false);
+                }}
+              >
+                {selectedTask ? 'Update Task' : 'Create Task'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
@@ -1134,6 +1494,8 @@ export default function BuildTrack() {
         return renderMaterials()
       case "payroll":
         return renderPayroll()
+      case "supervisor":
+        return renderSupervisor()
       default:
         return renderDashboard()
     }

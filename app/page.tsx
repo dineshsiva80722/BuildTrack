@@ -167,15 +167,35 @@ export default function BuildTrack() {
     }
   }, [])
 
+  // Demo users data
+  const demoUsers = [
+    { username: 'admin', password: 'buildtrack123', role: 'Super Admin' },
+    { username: 'client', password: 'client123', role: 'Client' },
+    { username: 'supervisor', password: 'super123', role: 'Supervisor' },
+    { username: 'supplier', password: 'supplier123', role: 'Supplier' },
+    { username: 'employee', password: 'emp123', role: 'Employee' },
+  ]
+
   // Login function
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    if (loginForm.username === "admin" && loginForm.password === "buildtrack123") {
+    const user = demoUsers.find(
+      (user) => user.username === loginForm.username && user.password === loginForm.password
+    )
+
+    if (user) {
       setIsAuthenticated(true)
-      localStorage.setItem("buildtrack_auth", "true")
-      toast({ title: "Login successful", description: "Welcome to BuildTrack!" })
+      setActiveView("dashboard")
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${user.role}`,
+      })
     } else {
-      toast({ title: "Login failed", description: "Invalid username or password", variant: "destructive" })
+      toast({
+        title: "Login failed",
+        description: "Invalid username or password",
+        variant: "destructive",
+      })
     }
   }
 
@@ -482,12 +502,22 @@ export default function BuildTrack() {
               </Button>
             </div>
 
-            <div className="text-center">
-              <p className="text-sm text-gray-600">
-                Demo credentials: <br />
-                Username: <strong>admin</strong> <br />
-                Password: <strong>buildtrack123</strong>
-              </p>
+            <div className="mt-6">
+              <h4 className="text-sm font-medium mb-3 text-center">Demo Credentials</h4>
+              <div className="text-sm text-gray-600 space-y-2 max-w-md mx-auto">
+                <div className="grid grid-cols-12 gap-2 border-b py-2">
+                  <div className="col-span-4 font-medium">Role</div>
+                  <div className="col-span-4 font-medium">Username</div>
+                  <div className="col-span-4 font-medium">Password</div>
+                </div>
+                {demoUsers.map((user, index) => (
+                  <div key={index} className="grid grid-cols-12 gap-2 border-b py-1.5">
+                    <div className="col-span-4">{user.role}</div>
+                    <div className="col-span-4">{user.username}</div>
+                    <div className="col-span-4">{user.password}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </form>
         </div>

@@ -1,8 +1,8 @@
 "use client"
 
+import { useEffect, useState } from 'react'
 import type React from "react"
 import Image from "next/image"
-import { useState, useEffect } from "react"
 import {
   CalendarDays,
   Users,
@@ -57,11 +57,22 @@ interface MaterialUsage {
 }
 
 export default function BuildTrack() {
+  const [isClient, setIsClient] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [loginForm, setLoginForm] = useState({ username: "", password: "" })
-  const [activeTab, setActiveTab] = useState("dashboard")
+  const [activeView, setActiveView] = useState("dashboard")
+  const [dashboardView, setDashboardView] = useState("overview")
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showAddEmployee, setShowAddEmployee] = useState(false)
+  const [showAddMaterial, setShowAddMaterial] = useState(false)
+  const [showAddUsage, setShowAddUsage] = useState(false)
+  const [activeTab, setActiveTab] = useState("dashboard")
+
+  // Set isClient to true after component mounts (client-side only)
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // State for employees
   const [employees, setEmployees] = useState<Employee[]>([
@@ -408,10 +419,14 @@ export default function BuildTrack() {
     { id: "payroll", name: "Payroll", icon: Calculator },
   ]
 
-  // Login page
+  // Only render the dashboard after we've determined we're on the client
+  if (!isClient) {
+    return null; // or a loading state
+  }
+
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
         <div className="max-w-md w-full space-y-8">
           <div>
             <div className="Login flex items-center justify-center p-2 ">
@@ -746,7 +761,7 @@ export default function BuildTrack() {
   }
 
   const renderDashboard = () => (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
@@ -759,9 +774,12 @@ export default function BuildTrack() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card 
+          className={`cursor-pointer transition-colors hover:bg-accent/50 ${dashboardView === 'employees' ? 'border-primary' : ''}`}
+          onClick={() => setDashboardView('employees')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
+            <CardTitle className="text-sm font-medium">Employees</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -770,38 +788,292 @@ export default function BuildTrack() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className={`cursor-pointer transition-colors hover:bg-accent/50 ${dashboardView === 'clients' ? 'border-primary' : ''}`}
+          onClick={() => setDashboardView('clients')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Present Today</CardTitle>
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Clients</CardTitle>
+            <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{presentEmployees}</div>
-            <p className="text-xs text-muted-foreground">Out of {totalEmployees} employees</p>
+            <div className="text-2xl font-bold">12</div>
+            <p className="text-xs text-muted-foreground">Active projects</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className={`cursor-pointer transition-colors hover:bg-accent/50 ${dashboardView === 'supervisors' ? 'border-primary' : ''}`}
+          onClick={() => setDashboardView('supervisors')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Daily Labor Cost</CardTitle>
-            <Calculator className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Supervisors</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalDailyCost}</div>
-            <p className="text-xs text-muted-foreground">Today's total</p>
+            <div className="text-2xl font-bold">5</div>
+            <p className="text-xs text-muted-foreground">On site</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className={`cursor-pointer transition-colors hover:bg-accent/50 ${dashboardView === 'supplies' ? 'border-primary' : ''}`}
+          onClick={() => setDashboardView('supplies')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Low Stock Items</CardTitle>
+            <CardTitle className="text-sm font-medium">Supplies</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{lowStockMaterials}</div>
-            <p className="text-xs text-muted-foreground">Need restocking</p>
+            <p className="text-xs text-muted-foreground">Low stock items</p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Dashboard Content Area */}
+      <div className="mt-6 bg-white rounded-lg border p-6 shadow-sm">
+        {dashboardView === 'overview' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Welcome back!</h2>
+              <p className="text-muted-foreground">Select an option above to view detailed information.</p>
+            </div>
+            
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Stats</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Active Projects</p>
+                      <p className="text-2xl font-bold">8</p>
+                    </div>
+                    <div className="rounded-lg bg-primary/10 p-3">
+                      <Package className="h-6 w-6 text-primary" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Pending Tasks</p>
+                      <p className="text-2xl font-bold">14</p>
+                    </div>
+                    <div className="rounded-lg bg-yellow-100 p-3">
+                      <CalendarDays className="h-6 w-6 text-yellow-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((item) => (
+                      <div key={item} className="flex items-start space-x-3">
+                        <div className="rounded-full bg-primary/10 p-1.5">
+                          <UserCheck className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">New employee onboarded</p>
+                          <p className="text-xs text-muted-foreground">2 hours ago</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+        
+        {dashboardView === 'employees' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight">Employees</h2>
+                <p className="text-muted-foreground">Manage your team members and their details</p>
+              </div>
+              <Button onClick={() => setShowAddEmployee(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Add Employee
+              </Button>
+            </div>
+            
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Daily Rate</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {employees.map((employee) => (
+                    <TableRow key={employee.id}>
+                      <TableCell className="font-medium">{employee.name}</TableCell>
+                      <TableCell>{employee.role}</TableCell>
+                      <TableCell>
+                        <Badge variant={employee.status === 'present' ? 'default' : 'outline'}>
+                          {employee.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>${employee.dailyRate}/day</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
+        
+        {dashboardView === 'clients' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Clients</h2>
+              <p className="text-muted-foreground">Manage your client relationships and projects</p>
+            </div>
+            
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((client) => (
+                <Card key={client} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle>Client {client}</CardTitle>
+                        <CardDescription>Project {client}</CardDescription>
+                      </div>
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <UserCheck className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Status:</span>
+                        <Badge variant={client % 2 === 0 ? 'default' : 'outline'}>
+                          {client % 2 === 0 ? 'Active' : 'On Hold'}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Budget:</span>
+                        <span>${(10000 + client * 5000).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Timeline:</span>
+                        <span>{client * 2} months</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {dashboardView === 'supervisors' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Supervisors</h2>
+              <p className="text-muted-foreground">Manage site supervisors and their assignments</p>
+            </div>
+            
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {['John Doe', 'Jane Smith', 'Robert Johnson', 'Emily Davis'].map((name, index) => (
+                <Card key={name}>
+                  <CardHeader>
+                    <div className="flex items-center space-x-4">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Users className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <CardTitle>{name}</CardTitle>
+                        <CardDescription>Site Supervisor</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Active Projects:</span>
+                        <span>{index + 2}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Team Size:</span>
+                        <span>{index + 5} members</span>
+                      </div>
+                      <div className="pt-2">
+                        <Button variant="outline" size="sm" className="w-full">
+                          View Details
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {dashboardView === 'supplies' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight">Supplies</h2>
+                <p className="text-muted-foreground">Track and manage construction materials</p>
+              </div>
+              <Button variant="outline" onClick={() => setShowAddMaterial(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Add Material
+              </Button>
+            </div>
+            
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Material</TableHead>
+                    <TableHead>Current Stock</TableHead>
+                    <TableHead>Minimum Required</TableHead>
+                    <TableHead>Unit</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {materials.map((material) => (
+                    <TableRow key={material.id}>
+                      <TableCell className="font-medium">{material.name}</TableCell>
+                      <TableCell>{material.current} {material.unit}</TableCell>
+                      <TableCell>{material.minimum} {material.unit}</TableCell>
+                      <TableCell>{material.unit}</TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={material.current <= material.minimum ? 'destructive' : 'default'}
+                        >
+                          {material.current <= material.minimum ? 'Low Stock' : 'In Stock'}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}
@@ -832,7 +1104,7 @@ export default function BuildTrack() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className=" gap-4 md:grid-cols-2 hidden" >
         <Card>
           <CardHeader>
             <CardTitle>Today's Attendance</CardTitle>
